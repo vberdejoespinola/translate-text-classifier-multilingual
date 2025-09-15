@@ -1,0 +1,23 @@
+# from joblib import Parallel, delayed
+from Levenshtein import ratio
+
+# batch positive titles to reduce memory workload
+BATCH_SIZE = 1000
+
+for i in range(0, len(pos_title), BATCH_SIZE):
+    # results_by_positive = {}
+    collect_similarity = {}
+    
+    for title in pos_title[i:i+BATCH_SIZE]:
+        # results = Parallel(n_jobs=8, verbose=10, batch_size=32768, backend="threading")(delayed(ratio)(title, rt) for rt in repo_title)
+        # results_by_positive[title] = [ratio(title, rt) for rt in repo_title]
+        collect_similarity[title] = [i for i, rt in enumerate(repo_title) if ratio(title, rt) > 0.6] 
+
+    # save to disk
+    # tmp_df = pd.DataFrame(data=results_by_positive).T
+    # tmp_df.to_parquet(f"../data/outputs_ratio/ratio_batch_{i}.parquet") # 500 pos * 440k repo in 6min 50
+
+    df = pd.DataFrame({'title': list(collect_similarity.keys()), 
+                       'similarity': list(collect_similarity.values())})
+    
+    df.to_parquet(f'../data/outputs_ratio2/similarity_batch_{i}.parquet')
